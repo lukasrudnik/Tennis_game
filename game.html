@@ -1,9 +1,13 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tennis game</title>
+</head>
+<body>
 <!-- Canvas czyli płótno - pozwala dynamicznie rysować po swojej powierzchni -->
 <canvas id="gameCanvas" width="800" height="600"></canvas>
-
-<script>
+<script> 
     
     var canvas; 
     var canvasContext;
@@ -13,6 +17,9 @@
     
     var ballSpeedX = 15; // prędkość piłeczki w pxls
     var ballSpeedY = 5;
+    
+    var player1Score = 0;
+    var player2Score = 0;
     
     var paddle1Y = 250;  // 1 rakiera 
     var paddle2Y = 250;  // 2 rakiera 
@@ -64,10 +71,12 @@
     
     // funkcja poruszania rakietą przez komputer
     function computerMovement() {
-        if(paddle2Y < ballY) {
+        var paddle2YCenter = paddle2Y + (PADDLE_HEIGHT/2);
+        
+        if(paddle2Y < ballY-35) {
             paddle2Y += 6;    
         }
-        else {
+        else if(paddle2YCenter > ballY+35) {
             paddle2Y -= 6;
         }
     }
@@ -86,6 +95,7 @@
             }
             else {
                 ballReset();
+                player2Score ++; // punktacja 
             }
         }  
         
@@ -96,6 +106,8 @@
             }
             else {
                 ballReset();
+                player1Score ++; // punktacja 
+
             }
         }
         
@@ -120,6 +132,9 @@
         colorRect(canvas.width-PADDLE_THICKNESS, paddle2Y, PADDLE_THICKNESS, PADDLE_HEIGHT, 'green'); 
         // piłeczka 
         colorCircle(ballX, ballY, 10, 'red'); 
+        
+        canvasContext.fillText(player1Score, 100, 100); // punktacja lewego gracza 
+        canvasContext.fillText(player2Score, canvas.width-100, 100); // punktacja prawego gracza 
     }
     
     // funkcja robienia okrągłej i kolorowej piłeczki 
@@ -137,5 +152,5 @@
     }
     
 </script>
-
+</body>
 </html>
