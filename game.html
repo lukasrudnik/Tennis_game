@@ -11,14 +11,16 @@
     var ballX = 400; // położenie początkowe piłeczki 
     var ballY = 400;
     
-    var ballSpeedX = 10; // prędkość piłeczki w pxls
+    var ballSpeedX = 15; // prędkość piłeczki w pxls
     var ballSpeedY = 5;
     
-    var paddle1Y = 250;  // jena rakiera 
+    var paddle1Y = 250;  // 1 rakiera 
+    var paddle2Y = 250;  // 2 rakiera 
     
-    const PADDLE_HEIGHT = 100;
+    const PADDLE_THICKNESS = 10; // grubość rakiet
+    const PADDLE_HEIGHT = 100; // wysokość rakiet
     
-    // funkcja poruszania palet myszą
+    // funkcja poruszania palet kursorem myszy
     function calculateMousePos(evt) {
         var rect = canvas.getBoundingClientRect();
         var root = document.documentElement;
@@ -26,14 +28,16 @@
         var mouseY = evt.clientY - rect.top - root.scrollTop;
         return {
             x:mouseX,
-            y:mosueY
+            y:mouseY
         }
     }
     
     // plansza gry
     window.onload = function() {       
-        canvas = document.getElementById('gameCanvas'); // zlapanie id elementu z rozmirem planszy 
-        canvasContext = canvas.getContext('2d'); // typ grafiki: 2d
+        // zlapanie id elementu z rozmirem planszy
+        canvas = document.getElementById('gameCanvas'); 
+        // typ grafiki: 2d
+        canvasContext = canvas.getContext('2d'); 
         
         // wywołanie funkcji wypisującej elementy i ustalenie czasu zmiany ich położenia w (ms) 
         var framesPerSEcond = 30;   
@@ -41,34 +45,81 @@
             moveEverything();
             drawEverything();
         }, 1000/framesPerSEcond); 
+        
+        // ruchy palety za myszką w planszy gry
+        canvas.addEventListener('mousemove', function(evt) {
+            var mousePos = calculateMousePos(evt);
+            
+            // przyklejenie kursora myszy do środka rakiety po majechaniu na plansze gry
+            paddle1Y = mousePos.y-(PADDLE_HEIGHT/2); 
+        });
+    }
+    
+    // funkcja resetowania piłeczki 
+    function ballReset() {
+        ballSpeedX = -ballSpeedX;
+        ballX = canvas.width/2;
+        ballY = canvas.height/2;
+    }
+    
+    // funkcja poruszania rakietą przez komputer
+    function computerMovement() {
+        if(paddle2Y < ballY) {
+            paddle2Y += 6;    
+        }
+        else {
+            paddle2Y -= 6;
+        }
     }
     
     // funkcja ruchu elementów - ruch piłeczki po planszy
-    function moveEverything() {    
-        ballX = ballX + ballSpeedX;
-        ballY = ballY + ballSpeedY;
+    function moveEverything() {
+        computerMovement();
+        
+        ballX += ballSpeedX;
+        ballY += ballSpeedY;
         
         if(ballX < 0) {
-            ballSpeedX = -ballSpeedX;
-        }     
-        if(ballX >= canvas.width) {
-            ballSpeedX = -ballSpeedX;
+            // brak resetowania piłeczki po odbiciu rakietą z lewej strony 
+            if(ballY > paddle1Y && ballY < paddle1Y+PADDLE_HEIGHT) {
+                ballSpeedX = -ballSpeedX;
+            }
+            else {
+                ballReset();
+            }
+        }  
+        
+        if(ballX > canvas.width) {
+            // brak resetowania piłeczki po odbiciu rakietą z prawej strony
+            if(ballY > paddle2Y && ballY < paddle2Y+PADDLE_HEIGHT) {
+                ballSpeedX = -ballSpeedX;
+            }
+            else {
+                ballReset();
+            }
         }
+        
         if(ballY < 0) {
             ballSpeedY = -ballSpeedY;
-        }     
+        } 
+        
         if(ballY >= canvas.height) {
             ballSpeedY = -ballSpeedY;
         }
     }
     
     // funkcja wypisująca wszystkie elementy
-    function drawEverything() {       
-        console.log(ballX);  // wyświetli położenie piłeczki w consollogu
-        
-        colorRect(0,0,canvas.width,canvas.height, 'black'); // plansza
-        colorRect(0,200,10,100, 'white'); //  lewa rakieta   
-        colorCircle(ballX, ballY, 10, 'red'); // piłeczka 
+    function drawEverything() {  
+        // wyświetli położenie piłeczki w consollogu
+        console.log(ballX);       
+        // plansza
+        colorRect(0, 0, canvas.width, canvas.height, 'black'); 
+        // lewa rakieta + sterowanie jej kursorem
+        colorRect(0, paddle1Y, 10, PADDLE_HEIGHT, 'white'); 
+        // prawa rakieta, sterowana przez komputer
+        colorRect(canvas.width-PADDLE_THICKNESS, paddle2Y, PADDLE_THICKNESS, PADDLE_HEIGHT, 'green'); 
+        // piłeczka 
+        colorCircle(ballX, ballY, 10, 'red'); 
     }
     
     // funkcja robienia okrągłej i kolorowej piłeczki 
