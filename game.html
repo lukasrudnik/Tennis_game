@@ -12,8 +12,8 @@
     var canvas; 
     var canvasContext;
     
-    var ballX = 400; // położenie początkowe piłeczki 
-    var ballY = 400;
+    var ballX = -400; // położenie początkowe piłeczki 
+    var ballY = -400; // (-) oznaca że leci w kieruku gracza
     
     var ballSpeedX = 15; // prędkość piłeczki w pxls
     var ballSpeedY = 5;
@@ -80,7 +80,7 @@
     // funkcja resetowania piłeczki 
     function ballReset() {
         // resetowanie punktacji po osiągnięciu limitu punktów 
-        if(player1Score >= WINNING_SCORE || player2Score >=WINNING_SCORE) {
+        if(player1Score >= WINNING_SCORE || player2Score >= WINNING_SCORE) {
             showWinScreen = true;
         }
         
@@ -93,11 +93,11 @@
     function computerMovement() {
         var paddle2YCenter = paddle2Y + (PADDLE_HEIGHT/2);
         
-        if(paddle2Y < ballY-10) {
-            paddle2Y += 10;    
+        if(paddle2Y < ballY-40) {
+            paddle2Y += 15; // prędkość rakiery 
         }
-        else if(paddle2YCenter > ballY+10) {
-            paddle2Y -= 10;
+        else if(paddle2YCenter > ballY+40) {
+            paddle2Y -= 15;
         }
     }
     
@@ -177,8 +177,7 @@
             return;
         }
         
-        drawNet();
-        
+        drawNet();     
         // lewa rakieta + sterowanie jej kursorem
         colorRect(0, paddle1Y, 10, PADDLE_HEIGHT, 'white'); 
         // prawa rakieta, sterowana przez komputer
