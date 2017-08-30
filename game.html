@@ -18,8 +18,11 @@
     var ballSpeedX = 15; // prędkość piłeczki w pxls
     var ballSpeedY = 5;
     
-    var player1Score = 0;
-    var player2Score = 0;
+    var player1Score = 0; // licznik 1
+    var player2Score = 0; 
+    
+    const WINNING_SCORE = 2; // resetowanie punktów po osiągnięciu tego limitu
+    var showWinScreen = false; // wyświetlanie zwycięzcy
     
     var paddle1Y = 250;  // 1 rakiera 
     var paddle2Y = 250;  // 2 rakiera 
@@ -39,6 +42,15 @@
         }
     }
     
+    // wznowienie gry
+    function handleMouseClick(evt) {
+        if(showWinScreen) {
+            player1Score = 0;
+            player2Score = 0;
+            showWinScreen = false;
+        }
+    }
+    
     // plansza gry
     window.onload = function() {       
         // zlapanie id elementu z rozmirem planszy
@@ -53,6 +65,9 @@
             drawEverything();
         }, 1000/framesPerSEcond); 
         
+        
+        canvas.addEventListener('mousedown', handleMouseClick);
+        
         // ruchy palety za myszką w planszy gry
         canvas.addEventListener('mousemove', function(evt) {
             var mousePos = calculateMousePos(evt);
@@ -64,6 +79,11 @@
     
     // funkcja resetowania piłeczki 
     function ballReset() {
+        // resetowanie punktacji po osiągnięciu limitu punktów 
+        if(player1Score >= WINNING_SCORE || player2Score >=WINNING_SCORE) {
+            showWinScreen = true;
+        }
+        
         ballSpeedX = -ballSpeedX;
         ballX = canvas.width/2;
         ballY = canvas.height/2;
@@ -73,16 +93,20 @@
     function computerMovement() {
         var paddle2YCenter = paddle2Y + (PADDLE_HEIGHT/2);
         
-        if(paddle2Y < ballY-35) {
-            paddle2Y += 6;    
+        if(paddle2Y < ballY-10) {
+            paddle2Y += 10;    
         }
-        else if(paddle2YCenter > ballY+35) {
-            paddle2Y -= 6;
+        else if(paddle2YCenter > ballY+10) {
+            paddle2Y -= 10;
         }
     }
     
     // funkcja ruchu elementów - ruch piłeczki po planszy
     function moveEverything() {
+        if(showWinScreen) {
+            return;
+        }
+        
         computerMovement();
         
         ballX += ballSpeedX;
@@ -92,6 +116,10 @@
             // brak resetowania piłeczki po odbiciu rakietą z lewej strony 
             if(ballY > paddle1Y && ballY < paddle1Y+PADDLE_HEIGHT) {
                 ballSpeedX = -ballSpeedX;
+                
+                // odbijanie piłeczki pod kontem
+                var deltaY = ballY -(paddle1Y+PADDLE_HEIGHT/2);
+                ballSpeedY = deltaY * 0.35;             
             }
             else {
                 ballReset();
@@ -103,6 +131,9 @@
             // brak resetowania piłeczki po odbiciu rakietą z prawej strony
             if(ballY > paddle2Y && ballY < paddle2Y+PADDLE_HEIGHT) {
                 ballSpeedX = -ballSpeedX;
+                
+                var deltaY = ballY -(paddle2Y+PADDLE_HEIGHT/2);
+                ballSpeedY = deltaY * 0.35;  
             }
             else {
                 ballReset();
@@ -120,12 +151,34 @@
         }
     }
     
+    // siatka na połowie boiska
+    function drawNet(){
+        for(var i=0; i<canvas.height; i+=40) {
+            colorRect(canvas.width/2-1, i, 2, 20, 'blue');
+        }
+    }
+    
     // funkcja wypisująca wszystkie elementy
-    function drawEverything() {  
+    function drawEverything() {          
         // wyświetli położenie piłeczki w consollogu
         console.log(ballX);       
         // plansza
         colorRect(0, 0, canvas.width, canvas.height, 'black'); 
+        // opcja dalszej gry po wygranej rundzie
+        if(showWinScreen) {
+            canvasContext.fillStyle = "yellow";
+            if(player1Score >= WINNING_SCORE) {
+                canvasContext.fillText("Player WON !", 400, 300);
+            }
+            else if(player2Score >= WINNING_SCORE) {               
+                canvasContext.fillText("Computer WON !", 400, 300);
+            }
+            canvasContext.fillText("Click to continue !", 400, 350);
+            return;
+        }
+        
+        drawNet();
+        
         // lewa rakieta + sterowanie jej kursorem
         colorRect(0, paddle1Y, 10, PADDLE_HEIGHT, 'white'); 
         // prawa rakieta, sterowana przez komputer
@@ -133,6 +186,8 @@
         // piłeczka 
         colorCircle(ballX, ballY, 10, 'red'); 
         
+        // punktacja graczy
+        canvasContext.fillStyle = "orange";
         canvasContext.fillText(player1Score, 100, 100); // punktacja lewego gracza 
         canvasContext.fillText(player2Score, canvas.width-100, 100); // punktacja prawego gracza 
     }
